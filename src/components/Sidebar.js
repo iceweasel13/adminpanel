@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 const Sidebar = () => {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   const [isBlogOpen, setIsBlogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+  const navigate = useNavigate();
   const toggleProjects = () => {
     setIsProjectsOpen(!isProjectsOpen);
   };
@@ -21,6 +20,11 @@ const Sidebar = () => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+  const logout = () => {
+    localStorage.removeItem("authenticated");
+    navigate("/login", { replace: true });
+    window.location.reload();
   };
 
   return (
@@ -160,6 +164,13 @@ const Sidebar = () => {
               Posts
             </h1>
           </Link>
+        </div>
+        <div
+          className="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white"
+          onClick={logout}
+        >
+          <i className="bi bi-box-arrow-right"></i>
+          <span className="text-[15px] ml-4 text-white font-bold">Logout</span>
         </div>
       </div>
     </div>

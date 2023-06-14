@@ -1,90 +1,107 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import Sidebar from "../components/Sidebar";
+import axios from "axios";
 
 const ProjectApplications = () => {
-  const data = [
-    {
-      id: 1,
-      name: "John Doe",
-      position: "Developer",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      position: "Designer",
-      status: "Approved",
-    },
-    // Diğer başvurularınızı buraya ekleyin
-  ];
+  const [data, setData] = useState([]);
+  const apiUrl = "http://localhost:5000/api/projects";
 
+  useEffect(() => {
+    axios
+      .get(apiUrl)
+      .then((response) => {
+        const projects = response.data.filter(
+          (project) => project.applicationStatus === false
+        );
+        setData(projects);
+      })
+      .catch((error) => {
+        console.error("Error fetching data: ", error);
+      });
+  }, []);
+  const handleApprove = (id) => {
+    axios
+      .put(`${apiUrl}/${id}`, { applicationStatus: true })
+      .then((response) => {
+        setData(data.filter((project) => project._id !== id));
+      })
+      .catch((error) => {
+        console.error("Error updating project: ", error);
+      });
+  };
+
+  const handleReject = (id) => {
+    axios
+      .delete(`${apiUrl}/${id}`)
+      .then((response) => {
+        setData(data.filter((project) => project._id !== id));
+      })
+      .catch((error) => {
+        console.error("Error deleting project: ", error);
+      });
+  };
   const columns = [
     {
-      name: "ID",
-      selector: "id",
-      sortable: true,
+      name: "wallet Address",
+      selector: (row) => row.walletAddress,
+      sortable: false,
     },
     {
-      name: "Name",
-      selector: "name",
-      sortable: true,
+      name: "Logo",
+      selector: (row) => row.logo,
+      sortable: false,
+      cell: (row) => <img src={row.logo} alt="logo" className="h-12 w-12" />,
     },
     {
-      name: "Position",
-      selector: "position",
+      name: "Title",
+      selector: (row) => row.title,
       sortable: true,
     },
     {
       name: "Status",
-      selector: "status",
+      selector: (row) => row.application_status,
       sortable: true,
       cell: (row) => (
         <div>
-          {row.status === "Pending" ? (
+          {!row.application_status && (
             <>
               <FontAwesomeIcon
                 icon={faCheck}
                 className="text-green-500 cursor-pointer"
-                onClick={() => handleApprove(row.id)}
+                onClick={() => handleApprove(row._id)}
               />
               <FontAwesomeIcon
                 icon={faTimes}
                 className="text-red-500 cursor-pointer ml-2"
-                onClick={() => handleReject(row.id)}
+                onClick={() => handleReject(row._id)}
               />
             </>
-          ) : (
-            <span>{row.status}</span>
           )}
         </div>
       ),
     },
   ];
 
-  const handleApprove = (id) => {
-    // Başvuruyu kabul etme işlemini burada gerçekleştirin
-  };
-
-  const handleReject = (id) => {
-    // Başvuruyu reddetme işlemini burada gerçekleştirin
-  };
-
   return (
-    <div className="container mx-auto px-2 ml-96">
-      <h1 className="flex items-center font-sans font-bold break-normal text-indigo-500 px-2 py-8 text-xl md:text-2xl">
-        Project Applications
-      </h1>
-      <div className="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
-        <DataTable
-          columns={columns}
-          data={data}
-          responsive={true}
-          pagination={true}
-        />
+    <>
+      <Sidebar />
+      <div className="container mx-auto px-2 mr-12">
+        <h1 className="flex items-center font-sans font-bold break-normal text-indigo-500 px-2 py-8 text-xl md:text-2xl">
+          Project Applications
+        </h1>
+        <div className="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
+          <DataTable
+            columns={columns}
+            data={data}
+            responsive={true}
+            pagination={true}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

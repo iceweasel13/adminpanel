@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -7,17 +8,34 @@ const LoginPage = () => {
   const [authenticated, setauthenticated] = useState(
     localStorage.getItem("authenticated") || false
   );
-  const users = [{ username: "Jane", password: "testpassword" }];
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authenticated) {
+      navigate("/dashboard");
+    }
+  }, [authenticated]);
+
+  const loginUser = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/admins", {
+        username,
+        password,
+      });
+      if (response.data.username) {
+        setauthenticated(true);
+        localStorage.setItem("authenticated", true);
+      } else {
+        alert("Login failed. Please check your username and password.");
+      }
+    } catch (error) {
+      console.error("Hata:", error);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const account = users.find((user) => user.username === username);
-    if (account && account.password === password) {
-      setauthenticated(true);
-      localStorage.setItem("authenticated", true);
-      navigate("/dashboard");
-    }
+    loginUser();
   };
 
   return (
